@@ -1,5 +1,5 @@
 import dbConnect from '@/lib/db';
-import Vote from '@/lib/models/Vote';
+import Vote from '@/models/Vote';
 
 export default async function handler(req, res) {
   // Set CORS headers

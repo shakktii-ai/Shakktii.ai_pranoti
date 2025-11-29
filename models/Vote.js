@@ -1,4 +1,4 @@
-//lib/models/Vote.js
+//models/Vote.js
 import mongoose from 'mongoose';
 
 const VoteSchema = new mongoose.Schema(
