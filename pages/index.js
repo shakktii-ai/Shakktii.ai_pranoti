@@ -27,29 +27,33 @@ export default function Home() {
   };
 
   const handleButtonClick = async () => {
-    setIsRed(true); // Change circle color to red
+    setIsRed(true);
     setIsVoting(true);
-    handleAudioPlay("audio3"); // Play Button Beep sound
+    handleAudioPlay("audio3");
     handleAudioPlay("audio4");
 
     try {
-      const response = await fetch('/api/votes', {
+      // Use absolute URL for the API endpoint
+      const apiUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://shakktii-ai-pranoti.vercel.app/api/votes'
+        : '/api/votes';
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        credentials: 'same-origin',
       });
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to submit vote');
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
       setVoteCount(data.count);
-      setIsModalOpen(true); // Open modal to show confirmation
+      setIsModalOpen(true);
       
     } catch (error) {
       console.error('Error submitting vote:', error);

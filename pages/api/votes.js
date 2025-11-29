@@ -1,9 +1,7 @@
-//pages/api/votes/votes.js
-
 import dbConnect from '@/lib/db';
 import Vote from '@/lib/models/Vote';
 
-const allowCors = (handler) => async (req, res) => {
+export default async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -15,21 +13,14 @@ const allowCors = (handler) => async (req, res) => {
 
   // Handle OPTIONS request
   if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return { props: {} }; // Add this line
+    return res.status(200).end();
   }
 
-  // Continue to the next handler
-  return await handler(req, res);
-};
-
-const handler = async (req, res) => {
-
+  // Connect to database
   try {
     await dbConnect();
   } catch (dbError) {
-    console.error('Database connection error:', dbError.message);
-    console.error('Full error:', dbError);
+    console.error('Database connection error:', dbError);
     return res.status(503).json({
       message: 'Service temporarily unavailable (DB connection failed).',
       error: dbError.message,
@@ -38,12 +29,10 @@ const handler = async (req, res) => {
 
   // GET: Fetch current vote count
   if (req.method === 'GET') {
-    await dbConnect();
     try {
       const vote = await Vote.findOne({ candidateName: 'सौ. ॲड प्रणेती सागर निंबोरेकर (भोंडेकर)' });
       
       if (!vote) {
-        // Create initial vote record if it doesn't exist
         const newVote = new Vote({
           candidateName: 'सौ. ॲड प्रणेती सागर निंबोरेकर (भोंडेकर)',
           count: 0,
@@ -62,12 +51,10 @@ const handler = async (req, res) => {
 
   // POST: Increment vote count
   if (req.method === 'POST') {
-await dbConnect();
     try {
       let vote = await Vote.findOne({ candidateName: 'सौ. ॲड प्रणेती सागर निंबोरेकर (भोंडेकर)' });
       
       if (!vote) {
-        // Create initial vote record if it doesn't exist
         vote = new Vote({
           candidateName: 'सौ. ॲड प्रणेती सागर निंबोरेकर (भोंडेकर)',
           count: 1,
@@ -85,37 +72,7 @@ await dbConnect();
     }
   }
 
-  // PUT: Update vote count (optional)
-  if (req.method === 'PUT') {
-    try {
-      const { count } = req.body;
-      
-      if (typeof count !== 'number') {
-        return res.status(400).json({ error: 'Invalid count value' });
-      }
-      
-      let vote = await Vote.findOne({ candidateName: 'सौ. ॲड प्रणेती सागर निंबोरेकर (भोंडेकर)' });
-      
-      if (!vote) {
-        vote = new Vote({
-          candidateName: 'सौ. ॲड प्रणेती सागर निंबोरेकर (भोंडेकर)',
-          count,
-          symbol: 'कमळ',
-        });
-      } else {
-        vote.count = count;
-      }
-      
-      await vote.save();
-      return res.status(200).json({ count: vote.count });
-    } catch (error) {
-      console.error('Error updating vote:', error);
-      return res.status(500).json({ error: 'Failed to update vote' });
-    }
-  }
-
   // If no method matches
-  return res.status(405).json({ error: 'Method not allowed' });
+  res.setHeader('Allow', ['GET', 'POST', 'OPTIONS']);
+  return res.status(405).json({ error: `Method ${req.method} not allowed` });
 }
-
-export default allowCors(handler);
