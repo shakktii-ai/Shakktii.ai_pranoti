@@ -1,9 +1,6 @@
 {
   "buildCommand": "next build",
   "outputDirectory": ".next",
-  "env": {
-    "MONGODB_URI": "@mongodb_uri"
-  },
   "functions": {
     "pages/api/**": {
       "memory": 1024,
