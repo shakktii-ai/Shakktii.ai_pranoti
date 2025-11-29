@@ -15,7 +15,8 @@ export default async function handler(req, res) {
   try {
     await dbConnect();
   } catch (dbError) {
-    console.error('Database connection error:', dbError);
+    console.error('Database connection error:', dbError.message);
+    console.error('Full error:', dbError);
     return res.status(503).json({
       message: 'Service temporarily unavailable (DB connection failed).',
       error: dbError.message,
