@@ -2,16 +2,36 @@ import dbConnect from '@/lib/db';
 import Vote from '@/lib/models/Vote';
 
 export default async function handler(req, res) {
-  await dbConnect();
+  // Add CORS headers for cross-origin requests
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
+
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
+  try {
+    await dbConnect();
+  } catch (dbError) {
+    console.error('Database connection error:', dbError);
+    return res.status(500).json({ 
+      message: 'Database connection failed', 
+      error: dbError.message 
+    });
+  }
 
   try {
     if (req.method === 'GET') {
       // Get current vote count
-      let vote = await Vote.findOne({ candidateName: 'सौ. ॲड प्रणेती सागर निंबोरेकर (भोंडेकर)' });
+      let vote = await Vote.findOne({ candidateName: 'सौ. ॲड प्रणोती सागर निंबोरेकर (भोंडेकर)' });
       
       if (!vote) {
         vote = await Vote.create({
-          candidateName: 'सौ. ॲड प्रणेती सागर निंबोरेकर (भोंडेकर)',
+          candidateName: 'सौ. ॲड प्रणोती सागर निंबोरेकर (भोंडेकर)',
           count: 0,
           symbol: 'कमळ',
         });
@@ -20,11 +40,11 @@ export default async function handler(req, res) {
       res.status(200).json({ count: vote.count, message: 'Vote count retrieved' });
     } else if (req.method === 'POST') {
       // Increment vote count
-      let vote = await Vote.findOne({ candidateName: 'सौ. ॲड प्रणेती सागर निंबोरेकर (भोंडेकर)' });
+      let vote = await Vote.findOne({ candidateName: 'सौ. ॲड प्रणोती सागर निंबोरेकर (भोंडेकर)' });
 
       if (!vote) {
         vote = await Vote.create({
-          candidateName: 'सौ. ॲड प्रणेती सागर निंबोरेकर (भोंडेकर)',
+          candidateName: 'सौ. ॲड प्रणोती सागर निंबोरेकर (भोंडेकर)',
           count: 1,
           symbol: 'कमळ',
         });
@@ -36,11 +56,11 @@ export default async function handler(req, res) {
       res.status(200).json({ count: vote.count, message: 'Vote counted!' });
     } else if (req.method === 'PUT') {
       // Reset vote count
-      let vote = await Vote.findOne({ candidateName: 'सौ. ॲड प्रणेती सागर निंबोरेकर (भोंडेकर)' });
+      let vote = await Vote.findOne({ candidateName: 'सौ. ॲड प्रणोती सागर निंबोरेकर (भोंडेकर)' });
 
       if (!vote) {
         vote = await Vote.create({
-          candidateName: 'सौ. ॲड प्रणेती सागर निंबोरेकर (भोंडेकर)',
+          candidateName: 'सौ. ॲड प्रणोती सागर निंबोरेकर (भोंडेकर)',
           count: 0,
           symbol: 'कमळ',
         });
