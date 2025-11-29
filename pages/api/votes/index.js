@@ -3,16 +3,27 @@
 import dbConnect from '@/lib/db';
 import Vote from '@/lib/models/Vote';
 
-export default async function handler(req, res) {
-  // CORS headers
+const allowCors = (handler) => async (req, res) => {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+  );
 
   // Handle OPTIONS request
   if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    res.status(200).end();
+    return { props: {} }; // Add this line
   }
+
+  // Continue to the next handler
+  return await handler(req, res);
+};
+
+const handler = async (req, res) => {
 
   try {
     await dbConnect();
@@ -103,6 +114,8 @@ await dbConnect();
     }
   }
 
-  // Method not allowed
+  // If no method matches
   return res.status(405).json({ error: 'Method not allowed' });
 }
+
+export default allowCors(handler);

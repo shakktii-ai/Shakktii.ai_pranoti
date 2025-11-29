@@ -30,23 +30,30 @@ export default function Home() {
     setIsRed(true); // Change circle color to red
     setIsVoting(true);
     handleAudioPlay("audio3"); // Play Button Beep sound
-    handleAudioPlay("audio4"); 
-    setIsModalOpen(true);// Play Final Sound
+    handleAudioPlay("audio4");
 
     try {
       const response = await fetch('/api/votes', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
+        credentials: 'same-origin',
       });
-      if (response.ok) {
-        const data = await response.json();
-        setVoteCount(data.count);
-         // Open modal to show confirmation
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to submit vote');
       }
+      
+      const data = await response.json();
+      setVoteCount(data.count);
+      setIsModalOpen(true); // Open modal to show confirmation
+      
     } catch (error) {
-      console.error('Error incrementing vote:', error);
+      console.error('Error submitting vote:', error);
+      alert(`Vote submission failed: ${error.message}`);
     } finally {
       setIsVoting(false);
     }
