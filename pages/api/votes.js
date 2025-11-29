@@ -1,4 +1,5 @@
 import dbConnect from '@/lib/db';
+import mongoose from 'mongoose';
 import Vote from '@/lib/models/Vote';
 
 export default async function handler(req, res) {
@@ -25,6 +26,7 @@ export default async function handler(req, res) {
 
   // GET: Fetch current vote count
   if (req.method === 'GET') {
+    await dbConnect();
     try {
       const vote = await Vote.findOne({ candidateName: 'सौ. ॲड प्रणेती सागर निंबोरेकर (भोंडेकर)' });
       
@@ -48,6 +50,7 @@ export default async function handler(req, res) {
 
   // POST: Increment vote count
   if (req.method === 'POST') {
+await dbConnect();
     try {
       let vote = await Vote.findOne({ candidateName: 'सौ. ॲड प्रणेती सागर निंबोरेकर (भोंडेकर)' });
       
