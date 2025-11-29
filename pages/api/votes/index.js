@@ -1,5 +1,6 @@
+//pages/api/votes/votes.js
+
 import dbConnect from '@/lib/db';
-import mongoose from 'mongoose';
 import Vote from '@/lib/models/Vote';
 
 export default async function handler(req, res) {
