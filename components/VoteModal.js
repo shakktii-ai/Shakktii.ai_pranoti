@@ -17,6 +17,9 @@ export default function VoteModal({ isOpen, onClose }) {
       setError(null);
       const response = await fetch('/api/votes', {
         method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
       if (!response.ok) {
         throw new Error('Failed to fetch vote count');
@@ -35,6 +38,9 @@ export default function VoteModal({ isOpen, onClose }) {
       setError(null);
       const response = await fetch('/api/votes', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
       if (!response.ok) {
         throw new Error('Failed to increment vote');
