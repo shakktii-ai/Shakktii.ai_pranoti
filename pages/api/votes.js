@@ -2,79 +2,102 @@ import dbConnect from '@/lib/db';
 import Vote from '@/lib/models/Vote';
 
 export default async function handler(req, res) {
-  // Add CORS headers for cross-origin requests
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // Handle preflight requests
+  // Handle OPTIONS request
   if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
+    return res.status(200).end();
   }
 
   try {
     await dbConnect();
   } catch (dbError) {
     console.error('Database connection error:', dbError);
-    return res.status(500).json({ 
-      message: 'Database connection failed', 
-      error: dbError.message 
+    return res.status(503).json({
+      message: 'Service temporarily unavailable (DB connection failed).',
+      error: dbError.message,
     });
   }
 
-  try {
-    if (req.method === 'GET') {
-      // Get current vote count
-      let vote = await Vote.findOne({ candidateName: 'सौ. ॲड प्रणोती सागर निंबोरेकर (भोंडेकर)' });
+  // GET: Fetch current vote count
+  if (req.method === 'GET') {
+    try {
+      const vote = await Vote.findOne({ candidateName: 'सौ. ॲड प्रणेती सागर निंबोरेकर (भोंडेकर)' });
       
       if (!vote) {
-        vote = await Vote.create({
-          candidateName: 'सौ. ॲड प्रणोती सागर निंबोरेकर (भोंडेकर)',
+        // Create initial vote record if it doesn't exist
+        const newVote = new Vote({
+          candidateName: 'सौ. ॲड प्रणेती सागर निंबोरेकर (भोंडेकर)',
           count: 0,
           symbol: 'कमळ',
         });
+        await newVote.save();
+        return res.status(200).json({ count: 0 });
       }
+      
+      return res.status(200).json({ count: vote.count });
+    } catch (error) {
+      console.error('Error fetching vote:', error);
+      return res.status(500).json({ error: 'Failed to fetch vote count' });
+    }
+  }
 
-      res.status(200).json({ count: vote.count, message: 'Vote count retrieved' });
-    } else if (req.method === 'POST') {
-      // Increment vote count
-      let vote = await Vote.findOne({ candidateName: 'सौ. ॲड प्रणोती सागर निंबोरेकर (भोंडेकर)' });
-
+  // POST: Increment vote count
+  if (req.method === 'POST') {
+    try {
+      let vote = await Vote.findOne({ candidateName: 'सौ. ॲड प्रणेती सागर निंबोरेकर (भोंडेकर)' });
+      
       if (!vote) {
-        vote = await Vote.create({
-          candidateName: 'सौ. ॲड प्रणोती सागर निंबोरेकर (भोंडेकर)',
+        // Create initial vote record if it doesn't exist
+        vote = new Vote({
+          candidateName: 'सौ. ॲड प्रणेती सागर निंबोरेकर (भोंडेकर)',
           count: 1,
           symbol: 'कमळ',
         });
       } else {
         vote.count += 1;
-        await vote.save();
       }
+      
+      await vote.save();
+      return res.status(200).json({ count: vote.count });
+    } catch (error) {
+      console.error('Error incrementing vote:', error);
+      return res.status(500).json({ error: 'Failed to increment vote' });
+    }
+  }
 
-      res.status(200).json({ count: vote.count, message: 'Vote counted!' });
-    } else if (req.method === 'PUT') {
-      // Reset vote count
-      let vote = await Vote.findOne({ candidateName: 'सौ. ॲड प्रणोती सागर निंबोरेकर (भोंडेकर)' });
-
+  // PUT: Update vote count (optional)
+  if (req.method === 'PUT') {
+    try {
+      const { count } = req.body;
+      
+      if (typeof count !== 'number') {
+        return res.status(400).json({ error: 'Invalid count value' });
+      }
+      
+      let vote = await Vote.findOne({ candidateName: 'सौ. ॲड प्रणेती सागर निंबोरेकर (भोंडेकर)' });
+      
       if (!vote) {
-        vote = await Vote.create({
-          candidateName: 'सौ. ॲड प्रणोती सागर निंबोरेकर (भोंडेकर)',
-          count: 0,
+        vote = new Vote({
+          candidateName: 'सौ. ॲड प्रणेती सागर निंबोरेकर (भोंडेकर)',
+          count,
           symbol: 'कमळ',
         });
       } else {
-        vote.count = 0;
-        await vote.save();
+        vote.count = count;
       }
-
-      res.status(200).json({ count: vote.count, message: 'Vote count reset!' });
-    } else {
-      res.status(405).json({ message: 'Method not allowed' });
+      
+      await vote.save();
+      return res.status(200).json({ count: vote.count });
+    } catch (error) {
+      console.error('Error updating vote:', error);
+      return res.status(500).json({ error: 'Failed to update vote' });
     }
-  } catch (error) {
-    console.error('Database error:', error);
-    res.status(500).json({ message: 'Internal server error', error: error.message });
   }
+
+  // Method not allowed
+  return res.status(405).json({ error: 'Method not allowed' });
 }

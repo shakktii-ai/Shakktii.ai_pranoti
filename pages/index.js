@@ -30,7 +30,8 @@ export default function Home() {
     setIsRed(true); // Change circle color to red
     setIsVoting(true);
     handleAudioPlay("audio3"); // Play Button Beep sound
-    handleAudioPlay("audio4"); // Play Final Sound
+    handleAudioPlay("audio4"); 
+    setIsModalOpen(true);// Play Final Sound
 
     try {
       const response = await fetch('/api/votes', {
@@ -42,7 +43,7 @@ export default function Home() {
       if (response.ok) {
         const data = await response.json();
         setVoteCount(data.count);
-        setIsModalOpen(true); // Open modal to show confirmation
+         // Open modal to show confirmation
       }
     } catch (error) {
       console.error('Error incrementing vote:', error);
